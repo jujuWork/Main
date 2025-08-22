@@ -30,19 +30,11 @@ li {
     margin-top: 1em;
     text-align: center;
     width: 100%;
-    font-family: "Montserrat", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-style: normal;
     letter-spacing: 0.2rem;
 }
 
 .header-item > h3 {
     margin-top: 1em;
-    letter-spacing: 0.1rem;
-    font-family: "Poppins", sans-serif;
-    font-weight: 400;
-    font-style: normal;
 }
 
 /****** SIDEBAR ******/
@@ -77,15 +69,6 @@ li {
     border-radius: 10px;
 }
 
-.main-item > h2 {
-    font-family: "Montserrat", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-style: normal;
-    width: 100%;
-    background-color: #F8FAFC;
-}
-
 .main-item > .list-item {
     font-family: "Poppins", sans-serif;
     font-weight: 400;
@@ -114,13 +97,6 @@ li {
 
 .section-items {
     margin-top: 1em;
-}
-
-.section-items > h3 {
-    font-family: "Montserrat", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-style: normal;
 }
 
 .section-items > ul {
@@ -161,35 +137,20 @@ li {
     margin-top: 1em;
 }
 
-.content-items > h3 {
-    font-family: "Montserrat", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-style: normal;
-}
-
 .work-exp > ul {
     margin-bottom: 15px;
 }
 
-.work-exp > h4, p {
+.work-exp > p {
     font-family: "Montserrat", sans-serif;
     font-optical-sizing: auto;
     font-weight: 600;
-    font-style: normal;
+    font-style: italic;
     padding: .5em 0 .5em 0;
 }
-
-.work-exp > p {
-    font-style: italic;
-}
-
 .work-exp > ul > li {
     padding-top: 3px;
     margin-top: 3px;
-    font-family: "Poppins", sans-serif;
-    font-weight: 400;
-    font-style: normal;
 }
 
 /****** FOOTER ******/
@@ -212,6 +173,13 @@ li {
         "footer footer footer"
     ;
     position: absolute;
+}
+
+.grid-item > h3, h2, h1, h4 {
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
 }
 
 @media (max-width: 760px) {
