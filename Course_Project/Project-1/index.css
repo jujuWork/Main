@@ -103,7 +103,14 @@ li {
 /****** SECTION ******/
 .section {
     grid-area: section;
-    background-color: chocolate;
+    margin-top: 10em;
+}
+
+/****** CONTENT ******/
+.content {
+    grid-area: content;
+    margin-top: 10em;
+    background-color: blanchedalmond;
 }
 
 /****** FOOTER ******/
@@ -121,7 +128,7 @@ li {
     grid-template-areas: 
         "header header header"
         "sidebar main main"
-        "section section content"
+        "section content content"
         "footer footer footer"
     ;
     position: absolute;
