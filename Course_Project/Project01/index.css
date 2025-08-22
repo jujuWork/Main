@@ -208,6 +208,7 @@ li {
         "header header header"
         "sidebar main main"
         "section content content"
+        "skill certificate certificate"
         "footer footer footer"
     ;
     position: absolute;
@@ -223,6 +224,8 @@ li {
         "main"
         "section"
         "content"
+        "skills"
+        "certificate"
         "footer";
     }
 }
