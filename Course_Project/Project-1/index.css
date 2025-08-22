@@ -104,6 +104,46 @@ li {
 .section {
     grid-area: section;
     margin-top: 10em;
+    background-color: #F8FAFC;
+    width: 100%;
+    border-radius: 10px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-items {
+    margin-top: 1em;
+}
+.section-items > h3 {
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+}
+
+.section-items > ul {
+    margin-bottom: 15px;
+}
+
+.section-items > ul > li {
+    padding-top: 3px;
+    margin-top: 3px;
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.section-items > ul > li::before {
+    display: inline-block;
+    width: .75em;
+    height: .75em;
+    content: '';
+    background-image: url('./images/right-arrow.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    padding-right: .75em;
 }
 
 /****** CONTENT ******/
