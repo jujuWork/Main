@@ -90,7 +90,7 @@ li {
     background-color: #F8FAFC;
     width: 100%;
     border-radius: 10px;
-    position: relative;
+    position: absolute;
     display: flex;
     justify-content: center;
 }
@@ -153,15 +153,11 @@ li {
     margin-top: 3px;
 }
 
-/****** CERTIFICATE ******/
-.certificate {
-    margin-top: 10em;
-}
-
 /****** FOOTER ******/
 .footer {
     grid-area: footer;
     background-color: blanchedalmond;
+    margin-top: 5em;
 }
 
 .grid-container {
@@ -174,7 +170,6 @@ li {
         "header header header"
         "sidebar main main"
         "section content content"
-        "certificate certificate certificate"
         "footer footer footer"
     ;
     position: absolute;
@@ -197,8 +192,6 @@ li {
         "main"
         "section"
         "content"
-        "skills"
-        "certificate"
         "footer";
     }
 }
