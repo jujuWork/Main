@@ -11,6 +11,14 @@ body {
 
 li {
     list-style: none;
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+a {
+    text-decoration: none;
+    color: #000;
 }
 
 /****** HEADER ******/
@@ -106,9 +114,6 @@ li {
 .section-items > ul > li {
     padding-top: 3px;
     margin-top: 3px;
-    font-family: "Poppins", sans-serif;
-    font-weight: 400;
-    font-style: normal;
 }
 
 .section-items > ul > li::before {
@@ -137,6 +142,16 @@ li {
     margin-top: 1em;
 }
 
+.content-items > h3 {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
+
+.work-exp {
+    margin-top: 0.5em;
+}
+
 .work-exp > ul {
     margin-bottom: 15px;
 }
@@ -156,10 +171,41 @@ li {
 /****** FOOTER ******/
 .footer {
     grid-area: footer;
-    background-color: blanchedalmond;
     margin-top: 5em;
+    background-color: #F8FAFC;
+    margin-bottom: 3em;
+    width: 100%;
+    position: absolute;
 }
 
+footer > h2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-item > ul {
+    margin-top: 1em;
+    margin-bottom: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    width: 100%;
+}
+
+.contact-item > ul > li > p {
+    text-align: center;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.contact-item > ul > li > a {
+    margin-top: 1rem;
+}
+
+
+/****** GRID ******/
 .grid-container {
     display: grid;
     gap: 5px;
