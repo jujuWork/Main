@@ -1,14 +1,17 @@
 let numberOfDrumButton = document.querySelectorAll(".drum").length;
 
+    // Click listener
 for (let i = 0; i < numberOfDrumButton; i++) {
     document.querySelectorAll(".drum")[i].addEventListener("click", function() {
         let buttonInnerHTML = this.innerHTML;
         makeSound(buttonInnerHTML);
+        buttonAnimation(buttonInnerHTML);
     });
 
-    // Keydown listener
+    // Keyboard press listener
     document.addEventListener("keydown", function(event) {
         makeSound(event.key);
+        buttonAnimation(event.key);
     });
 
     // Function to play sounds on keyboard press
@@ -48,9 +51,18 @@ for (let i = 0; i < numberOfDrumButton; i++) {
             case "l":
                 audio = new Audio("sounds/snare.mp3");
                 audio.play();
-                
+
             default:
                 break;
             }
     }
+}
+
+function buttonAnimation(currentKey) {
+    let activeButton = document.querySelector("." + currentKey);
+    activeButton.classList.add("pressed");
+
+    setTimeout(function() {
+        activeButton.classList.remove("pressed");
+    }, 100);
 }
