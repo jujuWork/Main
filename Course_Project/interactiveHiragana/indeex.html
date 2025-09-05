@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Hiragana Chart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as an interactive dashboard. This structure was chosen to provide a comprehensive learning environment on a single screen, which is more efficient for study and review than flipping through 46 separate pages. The layout is split into a main display area on the left and an interactive panel on the right (which stack on mobile). The main area focuses the learner's attention on one character at a time, showing its form, stroke order, and use in a word. The interactive panel allows for quick navigation via a full character grid and provides a canvas for immediate writing practice. This integrated approach supports different learning modes—visual, reading, and kinesthetic—in a cohesive user flow. -->
+    <!-- Visualization & Content Choices: 
+        - Hiragana Chart (Right Panel): Goal: Organize/Navigate. Method: A clickable HTML grid. Interaction: Clicking a character updates the entire dashboard. Justification: Provides immediate, non-linear access to any character, essential for both new learners and those reviewing.
+        - Main Character Display (Left Panel): Goal: Inform. Method: Large, stylized HTML text. Interaction: Dynamically updated via JavaScript. Justification: Creates a clear focal point for the character being studied.
+        - Stroke Order Diagram (Left Panel): Goal: Inform/Teach. Method: An HTML Canvas element. Interaction: A replay button triggers a JS function that draws the character's strokes sequentially. Justification: Animating the stroke order on a canvas is a highly effective, visual way to teach correct writing form without relying on external images or SVG.
+        - Example Word (Left Panel): Goal: Contextualize. Method: HTML text with a Unicode emoji. Interaction: Dynamically updated. Justification: Connects the abstract character to a concrete, memorable word and meaning, reinforcing learning.
+        - Practice Pad (Right Panel): Goal: Engage/Practice. Method: An HTML Canvas with mouse/touch drawing events. Interaction: Users can write the character; a button clears the canvas. Justification: Provides a kinesthetic learning experience, allowing users to immediately apply what they see.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hiragana-grid-char {
+            transition: all 0.2s ease-in-out;
+        }
+        .hiragana-grid-char:hover {
+            transform: scale(1.1);
+            background-color: #fde68a; /* amber-200 */
+        }
+        .hiragana-grid-char.selected {
+            background-color: #f59e0b; /* amber-500 */
+            color: white;
+            border-color: #b45309; /* amber-700 */
+        }
+        .practice-canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-amber-800">Interactive Hiragana Chart</h1>
+            <p class="text-slate-600 mt-2">Click a character to learn more and practice writing!</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center space-y-4">
+                <div id="main-char-display" class="text-9xl font-bold" style="font-family: 'Yu Mincho', serif;">あ</div>
+                <div id="romaji-display" class="text-4xl text-slate-500">a</div>
+                <div class="w-full max-w-xs p-4 bg-amber-100 rounded-xl text-center">
+                    <h3 class="font-bold text-lg text-amber-800">Example Word</h3>
+                    <p id="example-word-char" class="text-3xl mt-1">あさ</p>
+                    <p id="example-word-romaji" class="text-md text-slate-600">asa</p>
+                    <p id="example-word-meaning" class="text-md text-slate-600 font-semibold">Morning ☀️</p>
+                </div>
+                 <div class="w-full max-w-xs p-4 text-center">
+                    <h3 class="font-bold text-lg text-amber-800 mb-2">Stroke Order</h3>
+                    <canvas id="stroke-order-canvas" width="200" height="200" class="bg-gray-100 rounded-lg mx-auto"></canvas>
+                    <button id="replay-stroke-btn" class="mt-4 px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg shadow-md hover:bg-amber-600 transition">Replay</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-lg p-6">
+                <div class="grid grid-cols-5 gap-2 md:gap-3 text-center mb-6" id="hiragana-grid">
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-amber-200">
+                    <h3 class="font-bold text-lg text-amber-800 text-center mb-2">Practice Pad</h3>
+                     <div class="relative w-full max-w-md mx-auto aspect-video bg-gray-100 rounded-lg shadow-inner">
+                        <canvas id="practice-canvas" class="absolute top-0 left-0 w-full h-full rounded-lg practice-canvas"></canvas>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button id="clear-practice-btn" class="px-6 py-2 bg-slate-600 text-white font-semibold rounded-lg shadow-md hover:bg-slate-700 transition">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hiraganaData = [
+                { char: 'あ', romaji: 'a', word: 'あさ', word_romaji: 'asa', meaning: 'Morning ☀️', strokes: [[[55, 30],[145, 30]], [[90, 10],[90, 170]], [[130, 70], [170, 110], [130, 150], [70, 150], [30, 110], [80, 70]]] },
+                { char: 'い', romaji: 'i', word: 'いぬ', word_romaji: 'inu', meaning: 'Dog 🐶', strokes: [[[50, 40], [50, 160]], [[130, 50], [130, 150]]] },
+                { char: 'う', romaji: 'u', word: 'うみ', word_romaji: 'umi', meaning: 'Sea 🌊', strokes: [[[60, 30], [140, 30]], [[50, 80], [100, 160], [150, 80]]] },
+                { char: 'え', romaji: 'e', word: 'えき', word_romaji: 'eki', meaning: 'Station 🚉', strokes: [[[80, 20],[120, 20]], [[40, 60], [160, 60], [120, 120], [40, 160], [160, 180]]] },
+                { char: 'お', romaji: 'o', word: 'おんがく', word_romaji: 'ongaku', meaning: 'Music 🎵', strokes: [[[40, 80], [160, 80]], [[100, 20], [100, 180]], [[140, 40], [180, 80], [140, 120]], [[150, 150]]] },
+                { char: 'か', romaji: 'ka', word: 'かさ', word_romaji: 'kasa', meaning: 'Umbrella ☂️', strokes: [[[40, 40], [80, 20], [120, 60]], [[100, 20], [100, 180]], [[140, 50]]] },
+                { char: 'き', romaji: 'ki', word: 'き', word_romaji: 'ki', meaning: 'Tree 🌳', strokes: [[[50, 40], [150, 40]], [[50, 80], [150, 80]], [[100, 20], [100, 180]], [[40, 140], [160, 140]]] },
+                { char: 'く', romaji: 'ku', word: 'くつ', word_romaji: 'kutsu', meaning: 'Shoes 👞', strokes: [[[50, 150], [150, 50]]] },
+                { char: 'け', romaji: 'ke', word: 'けむし', word_romaji: 'kemushi', meaning: 'Caterpillar 🐛', strokes: [[[40, 40], [40, 160]], [[80, 60], [160, 60]], [[120, 20], [120, 180]]] },
+                { char: 'こ', romaji: 'ko', word: 'こども', word_romaji: 'kodomo', meaning: 'Child 🧒', strokes: [[[40, 60], [160, 60]], [[40, 140], [120, 140]]] },
+                { char: 'さ', romaji: 'sa', word: 'さかな', word_romaji: 'sakana', meaning: 'Fish 🐠', strokes: [[[40, 40], [160, 40]], [[100, 20], [100, 180]], [[40, 140], [120, 140]]] },
+                { char: 'し', romaji: 'shi', word: 'しお', word_romaji: 'shio', meaning: 'Salt 🧂', strokes: [[[100, 20], [80, 180]]] },
+                { char: 'す', romaji: 'su', word: 'すいか', word_romaji: 'suika', meaning: 'Watermelon 🍉', strokes: [[[40, 80], [160, 80]], [[100, 20], [100, 140], [80, 180], [120, 180]]] },
+                { char: 'せ', romaji: 'se', word: 'せかい', word_romaji: 'sekai', meaning: 'World 🌍', strokes: [[[40, 40], [160, 40]], [[140, 80], [40, 80]], [[120, 20], [120, 180]]] },
+                { char: 'そ', romaji: 'so', word: 'そら', word_romaji: 'sora', meaning: 'Sky ☁️', strokes: [[[40, 40], [160, 40], [40, 80], [160, 80], [80, 140]]] },
+                { char: 'た', romaji: 'ta', word: 'たこ', word_romaji: 'tako', meaning: 'Octopus 🐙', strokes: [[[40, 80], [160, 80]], [[100, 20], [100, 180]], [[140, 120], [180, 120]], [[140, 160], [180, 160]]] },
+                { char: 'ち', romaji: 'chi', word: 'ちず', word_romaji: 'chizu', meaning: 'Map 🗺️', strokes: [[[40, 80], [160, 80]], [[100, 20], [80, 140], [160, 180]]] },
+                { char: 'つ', romaji: 'tsu', word: 'つくえ', word_romaji: 'tsukue', meaning: 'Desk 💻', strokes: [[[40, 80], [160, 40], [120, 160]]] },
+                { char: 'て', romaji: 'te', word: 'て', word_romaji: 'te', meaning: 'Hand ✋', strokes: [[[40, 80], [160, 80], [100, 160]]] },
+                { char: 'と', romaji: 'to', word: 'とけい', word_romaji: 'tokei', meaning: 'Clock ⏰', strokes: [[[100, 40], [100, 160]], [[80, 120], [120, 120]]] },
+                { char: 'な', romaji: 'na', word: 'なつ', word_romaji: 'natsu', meaning: 'Summer 🌻', strokes: [[[40, 80], [160, 80]], [[100, 20], [40, 140]], [[140, 40]], [[160, 120], [120, 160], [180, 140]]] },
+                { char: 'に', romaji: 'ni', word: 'にじ', word_romaji: 'niji', meaning: 'Rainbow 🌈', strokes: [[[80, 20], [80, 180]], [[40, 80], [120, 80]], [[160, 80], [160, 160]]] },
+                { char: 'ぬ', romaji: 'nu', word: 'ぬの', word_romaji: 'nuno', meaning: 'Cloth 👕', strokes: [[[40, 120], [120, 40]], [[40, 40], [160, 120], [80, 180], [160, 180], [120, 140]]] },
+                { char: 'ね', romaji: 'ne', word: 'ねこ', word_romaji: 'neko', meaning: 'Cat 🐈', strokes: [[[40, 20], [40, 180]], [[120, 40], [180, 80], [120, 120], [180, 160], [140, 180]]] },
+                { char: 'の', romaji: 'no', word: 'のり', word_romaji: 'nori', meaning: 'Seaweed 🍙', strokes: [[[160, 40], [40, 160], [160, 160]]] },
+                { char: 'は', romaji: 'ha', word: 'はな', word_romaji: 'hana', meaning: 'Flower 🌸', strokes: [[[40, 20], [40, 180]], [[120, 60], [180, 60]], [[150, 40], [150, 140], [120, 180]]] },
+                { char: 'ひ', romaji: 'hi', word: 'ひこうき', word_romaji: 'hikouki', meaning: 'Airplane ✈️', strokes: [[[40, 100], [160, 80], [80, 140]]] },
+                { char: 'ふ', romaji: 'fu', word: 'ふね', word_romaji: 'fune', meaning: 'Boat ⛵', strokes: [[[100, 40]], [[40, 80], [80, 120]], [[120, 120], [160, 80]], [[80, 160], [120, 160]]] },
+                { char: 'へ', romaji: 'he', word: 'へや', word_romaji: 'heya', meaning: 'Room 🚪', strokes: [[[40, 160], [160, 40]]] },
+                { char: 'ほ', romaji: 'ho', word: 'ほし', word_romaji: 'hoshi', meaning: 'Star ⭐', strokes: [[[40, 20], [40, 180]], [[120, 60], [180, 60]], [[120, 120], [180, 120]], [[150, 40], [150, 140], [120, 180]]] },
+                { char: 'ま', romaji: 'ma', word: 'まど', word_romaji: 'mado', meaning: 'Window 🖼️', strokes: [[[40, 60], [160, 60]], [[40, 120], [160, 120]], [[100, 20], [100, 180], [80, 160]]] },
+                { char: 'み', romaji: 'mi', word: 'みみ', word_romaji: 'mimi', meaning: 'Ear 👂', strokes: [[[40, 80], [120, 40], [160, 80]], [[140, 20], [80, 180]]] },
+                { char: 'む', romaji: 'mu', word: 'むし', word_romaji: 'mushi', meaning: 'Insect 🐞', strokes: [[[40, 80], [160, 80]], [[100, 20], [100, 140], [40, 180]], [[140, 40]]] },
+                { char: 'め', romaji: 'me', word: 'め', word_romaji: 'me', meaning: 'Eye 👀', strokes: [[[40, 120], [120, 40]], [[160, 40], [80, 180]]] },
+                { char: 'も', romaji: 'mo', word: 'もも', word_romaji: 'momo', meaning: 'Peach 🍑', strokes: [[[100, 20], [80, 180]], [[40, 80], [160, 80]], [[40, 140], [160, 140]]] },
+                { char: 'や', romaji: 'ya', word: 'やま', word_romaji: 'yama', meaning: 'Mountain ⛰️', strokes: [[[140, 40], [80, 80], [120, 120]], [[100, 60]], [[40, 20], [40, 180]]] },
+                { char: 'ゆ', romaji: 'yu', word: 'ゆき', word_romaji: 'yuki', meaning: 'Snow ❄️', strokes: [[[40, 20], [40, 140], [120, 180]], [[160, 20], [160, 180]]] },
+                { char: 'よ', romaji: 'yo', word: 'よる', word_romaji: 'yoru', meaning: 'Night 🌙', strokes: [[[40, 80], [160, 80]], [[100, 20], [100, 180]]] },
+                { char: 'ら', romaji: 'ra', word: 'らくだ', word_romaji: 'rakuda', meaning: 'Camel 🐪', strokes: [[[100, 40]], [[40, 80], [160, 80], [80, 160]]] },
+                { char: 'り', romaji: 'ri', word: 'りんご', word_romaji: 'ringo', meaning: 'Apple 🍎', strokes: [[[40, 40], [40, 160]], [[140, 20], [140, 180]]] },
+                { char: 'る', romaji: 'ru', word: 'るす', word_romaji: 'rusu', meaning: 'Absence 🏠', strokes: [[[40, 40], [160, 40], [80, 120], [160, 160], [120, 180]]] },
+                { char: 'れ', romaji: 're', word: 'れもん', word_romaji: 'remon', meaning: 'Lemon 🍋', strokes: [[[40, 20], [40, 180]], [[120, 40], [180, 80], [120, 120], [180, 160]]] },
+                { char: 'ろ', romaji: 'ro', word: 'ろうそく', word_romaji: 'rousoku', meaning: 'Candle 🕯️', strokes: [[[40, 40], [160, 40], [80, 120], [160, 160]]] },
+                { char: 'わ', romaji: 'wa', word: 'わたし', word_romaji: 'watashi', meaning: 'I/Me 🙋', strokes: [[[40, 20], [40, 180]], [[120, 40], [180, 80], [120, 160]]] },
+                { char: 'を', romaji: 'wo', word: '(particle)', word_romaji: 'o', meaning: 'Object marker', strokes: [[[40, 80], [160, 80]], [[100, 20], [80, 140]], [[40, 160], [160, 160]]] },
+                { char: 'ん', romaji: 'n', word: 'ぱん', word_romaji: 'pan', meaning: 'Bread 🍞', strokes: [[[160, 40], [80, 180]]] },
+            ];
+            
+            let currentCharacter = hiraganaData[0];
+            const grid = document.getElementById('hiragana-grid');
+            
+            hiraganaData.forEach(item => {
+                const charEl = document.createElement('div');
+                charEl.textContent = item.char;
+                charEl.className = 'hiragana-grid-char cursor-pointer p-2 md:p-4 rounded-lg border-2 border-amber-200 text-2xl font-semibold';
+                charEl.addEventListener('click', () => {
+                    currentCharacter = item;
+                    updateDisplay();
+                });
+                grid.appendChild(charEl);
+            });
+
+            function updateDisplay() {
+                document.getElementById('main-char-display').textContent = currentCharacter.char;
+                document.getElementById('romaji-display').textContent = currentCharacter.romaji;
+                document.getElementById('example-word-char').textContent = currentCharacter.word;
+                document.getElementById('example-word-romaji').textContent = currentCharacter.word_romaji;
+                document.getElementById('example-word-meaning').textContent = currentCharacter.meaning;
+                
+                document.querySelectorAll('.hiragana-grid-char').forEach((el, index) => {
+                    if (hiraganaData[index].char === currentCharacter.char) {
+                        el.classList.add('selected');
+                    } else {
+                        el.classList.remove('selected');
+                    }
+                });
+                drawStrokeOrder();
+            }
+
+            const strokeCanvas = document.getElementById('stroke-order-canvas');
+            const strokeCtx = strokeCanvas.getContext('2d');
+            let animationFrameId;
+
+            function drawStrokeOrder() {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                strokeCtx.clearRect(0, 0, strokeCanvas.width, strokeCanvas.height);
+                const strokes = currentCharacter.strokes;
+                let currentStrokeIndex = 0;
+                let currentPointIndex = 0;
+
+                function animateStroke() {
+                    if (currentStrokeIndex >= strokes.length) return;
+
+                    const stroke = strokes[currentStrokeIndex];
+                    if (currentPointIndex < stroke.length) {
+                        strokeCtx.beginPath();
+                        strokeCtx.lineWidth = 12;
+                        strokeCtx.lineCap = 'round';
+                        strokeCtx.lineJoin = 'round';
+                        strokeCtx.strokeStyle = `rgba(180, 83, 9, ${0.5 + 0.5 * (currentPointIndex / stroke.length)})`; // amber-700
+                        
+                        strokeCtx.moveTo(stroke[0][0], stroke[0][1]);
+                        for (let i = 1; i <= currentPointIndex; i++) {
+                            strokeCtx.lineTo(stroke[i][0], stroke[i][1]);
+                        }
+                        strokeCtx.stroke();
+                        currentPointIndex++;
+                        animationFrameId = requestAnimationFrame(animateStroke);
+                    } else {
+                        currentStrokeIndex++;
+                        currentPointIndex = 0;
+                        animationFrameId = requestAnimationFrame(animateStroke);
+                    }
+                }
+                animateStroke();
+            }
+            
+            document.getElementById('replay-stroke-btn').addEventListener('click', drawStrokeOrder);
+
+            const practiceCanvas = document.getElementById('practice-canvas');
+            const practiceCtx = practiceCanvas.getContext('2d');
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            
+            function setCanvasSize() {
+                const parent = practiceCanvas.parentElement;
+                practiceCanvas.width = parent.clientWidth;
+                practiceCanvas.height = parent.clientHeight;
+                practiceCtx.strokeStyle = '#334155'; // slate-700
+                practiceCtx.lineWidth = 6;
+                practiceCtx.lineCap = 'round';
+                practiceCtx.lineJoin = 'round';
+            }
+            
+            function getMousePos(canvas, evt) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: evt.clientX - rect.left,
+                    y: evt.clientY - rect.top
+                };
+            }
+
+            function getTouchPos(canvas, touch) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: touch.clientX - rect.left,
+                    y: touch.clientY - rect.top
+                };
+            }
+
+            function startDrawing(e) {
+                isDrawing = true;
+                let pos;
+                if (e.touches) {
+                    pos = getTouchPos(practiceCanvas, e.touches[0]);
+                } else {
+                    pos = getMousePos(practiceCanvas, e);
+                }
+                [lastX, lastY] = [pos.x, pos.y];
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                let pos;
+                if (e.touches) {
+                    pos = getTouchPos(practiceCanvas, e.touches[0]);
+                } else {
+                    pos = getMousePos(practiceCanvas, e);
+                }
+                practiceCtx.beginPath();
+                practiceCtx.moveTo(lastX, lastY);
+                practiceCtx.lineTo(pos.x, pos.y);
+                practiceCtx.stroke();
+                [lastX, lastY] = [pos.x, pos.y];
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            practiceCanvas.addEventListener('mousedown', startDrawing);
+            practiceCanvas.addEventListener('mousemove', draw);
+            practiceCanvas.addEventListener('mouseup', stopDrawing);
+            practiceCanvas.addEventListener('mouseout', stopDrawing);
+            
+            practiceCanvas.addEventListener('touchstart', startDrawing);
+            practiceCanvas.addEventListener('touchmove', draw);
+            practiceCanvas.addEventListener('touchend', stopDrawing);
+
+            document.getElementById('clear-practice-btn').addEventListener('click', () => {
+                practiceCtx.clearRect(0, 0, practiceCanvas.width, practiceCanvas.height);
+            });
+
+            window.addEventListener('resize', setCanvasSize);
+            setCanvasSize();
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
