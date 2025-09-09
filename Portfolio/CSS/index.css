@@ -434,9 +434,9 @@ header {
     overflow: hidden;
     height: 100%;
 
-    &:hover {
+    /* &:hover {
         transform: scale(1.05);
-    }
+    } */
 }
 
 .project-thumbnail {
@@ -456,9 +456,9 @@ header {
         transition:  transform 1s ease;
     }
 
-    &:hover {
+    /* &:hover {
         transform: scale(1.05);
-    }
+    } */
 
 
 .project-info {
@@ -507,9 +507,9 @@ header {
     transition: background-color 0.3s ease;
     align-self: flex-start;
 
-    &:hover {
+    /* &:hover {
         background-color: #2980b9;
-    }
+    } */
 }
 
 /* Carousel Styling */
